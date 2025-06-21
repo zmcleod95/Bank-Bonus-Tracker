@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Bonus Tracker</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        function App( ) {
+            const [activePlayer, setActivePlayer] = React.useState('Player 1');
+            const [currentPage, setCurrentPage] = React.useState('dashboard');
+            const [bonuses, setBonuses] = React.useState([
+                {
+                    id: 1,
+                    bank: 'Chase',
+                    title: '$900 Checking + Savings Bonus',
+                    amount: 900,
+                    minDeposit: 25000,
+                    directDeposit: 500,
+                    holdingPeriod: 90,
+                    status: 'available'
+                },
+                {
+                    id: 2,
+                    bank: 'Wells Fargo',
+                    title: '$2500 Premier Bonus',
+                    amount: 2500,
+                    minDeposit: 250000,
+                    directDeposit: 0,
+                    holdingPeriod: 180,
+                    status: 'available'
+                },
+                {
+                    id: 3,
+                    bank: 'Bank of America',
+                    title: '$300 Checking Bonus',
+                    amount: 300,
+                    minDeposit: 1000,
+                    directDeposit: 250,
+                    holdingPeriod: 90,
+                    status: 'available'
+                }
+            ]);
+            
+            const [trackedBonuses, setTrackedBonuses] = React.useState({
+                'Player 1': [],
+                'Player 2': []
+            });
+
+            const Navigation = () => (
+                <nav className="flex space-x-1">
+                    {[
+                        { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
+                        { id: 'bonuses', label: 'Bonuses', icon: 'fas fa-gift' },
+                        { id: 'tracking', label: 'My Tracking', icon: 'fas fa-list-check' },
+                        { id: 'comparison', label: 'Comparison', icon: 'fas fa-chart-line' }
+                    ].map(item => (
+                        <button
+                            key={item.id}
+                            onClick={() => setCurrentPage(item.id)}
+                            className={`px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-2 ${
+                                currentPage === item.id 
+                                    ? 'bg-blue-100 text-blue-700' 
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                            }`}
+                        >
+                            <i className={item.icon}></i>
+                            <span>{item.label}</span>
+                        </button>
+                    ))}
+                </nav>
+            );
+
+            const Dashboard = () => {
+                const playerBonuses = trackedBonuses[activePlayer];
+                const totalEarnings = playerBonuses.reduce((sum, bonus) => sum + bonus.amount, 0);
+                const completedBonuses = playerBonuses.filter(b => b.status === 'completed').length;
+                const activeBonuses = playerBonuses.filter(b => b.status === 'active').length;
+                
+                return (
+                    <div>
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">{activePlayer}'s Dashboard</h2>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <div className="flex items-center">
+                                    <div className="flex-shrink-0">
+                                        <i className="fas fa-dollar-sign text-green-500 text-2xl"></i>
+                                    </div>
+                                    <div className="ml-4">
+                                        <h3 className="text-sm font-medium text-gray-500">Total Earnings</h3>
+                                        <p className="text-2xl font-bold text-green-600">${totalEarnings}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <div className="flex items-center">
+                                    <div className="flex-shrink-0">
+                                        <i className="fas fa-check-circle text-blue-500 text-2xl"></i>
+                                    </div>
+                                    <div className="ml-4">
+                                        <h3 className="text-sm font-medium text-gray-500">Completed Bonuses</h3>
+                                        <p className="text-2xl font-bold text-blue-600">{completedBonuses}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <div className="flex items-center">
+                                    <div className="flex-shrink-0">
+                                        <i className="fas fa-clock text-yellow-500 text-2xl"></i>
+                                    </div>
+                                    <div className="ml-4">
+                                        <h3 className="text-sm font-medium text-gray-500">Pending Amount</h3>
+                                        <p className="text-2xl font-bold text-yellow-600">$0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white p-6 rounded-lg shadow">
+                                <div className="flex items-center">
+                                    <div className="flex-shrink-0">
+                                        <i className="fas fa-star text-purple-500 text-2xl"></i>
+                                    </div>
+                                    <div className="ml-4">
+                                        <h3 className="text-sm font-medium text-gray-500">Active Bonuses</h3>
+                                        <p className="text-2xl font-bold text-purple-600">{activeBonuses}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-white rounded-lg shadow p-6">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Active Tracked Bonuses</h3>
+                            {playerBonuses.length === 0 ? (
+                                <div className="text-center py-8">
+                                    <i className="fas fa-inbox text-gray-300 text-4xl mb-4"></i>
+                                    <p className="text-gray-500">No active bonuses</p>
+                                    <p className="text-sm text-gray-400 mt-2">Start tracking bank bonuses to see them here.</p>
+                                    <button 
+                                        onClick={() => setCurrentPage('bonuses')}
+                                        className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                    >
+                                        Browse Bonuses
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {playerBonuses.map(bonus => (
+                                        <div key={bonus.id} className="border rounded-lg p-4">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <h4 className="font-medium text-gray-900">{bonus.bank}</h4>
+                                                    <p className="text-sm text-gray-600">{bonus.title}</p>
+                                                    <p className="text-lg font-bold text-green-600">${bonus.amount}</p>
+                                                </div>
+                                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                    bonus.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                                    bonus.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                                                    'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                    {bonus.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+            const BonusCatalog = () => (
+                <div>
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">Available Bank Bonuses</h2>
+                        <p className="text-gray-600">Browse and track the best bank bonus offers</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {bonuses.map(bonus => (
+                            <div key={bonus.id} className="bg-white rounded-lg shadow p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-900">{bonus.bank}</h3>
+                                        <p className="text-sm text-gray-600">{bonus.title}</p>
+                                    </div>
+                                    <span className="text-2xl font-bold text-green-600">${bonus.amount}</span>
+                                </div>
+                                
+                                <div className="space-y-2 text-sm text-gray-600 mb-4">
+                                    <div className="flex justify-between">
+                                        <span>Min Deposit:</span>
+                                        <span>${bonus.minDeposit.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Direct Deposit:</span>
+                                        <span>${bonus.directDeposit}/month</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Holding Period:</span>
+                                        <span>{bonus.holdingPeriod} days</span>
+                                    </div>
+                                </div>
+                                
+                                <button 
+                                    onClick={() => {
+                                        const newBonus = { ...bonus, status: 'active', dateStarted: new Date().toISOString() };
+                                        setTrackedBonuses(prev => ({
+                                            ...prev,
+                                            [activePlayer]: [...prev[activePlayer], newBonus]
+                                        }));
+                                    }}
+                                    className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                                >
+                                    Track This Bonus
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const Tracking = () => {
+                const playerBonuses = trackedBonuses[activePlayer];
+                
+                return (
+                    <div>
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">{activePlayer}'s Tracked Bonuses</h2>
+                        </div>
+                        
+                        {playerBonuses.length === 0 ? (
+                            <div className="bg-white rounded-lg shadow p-8 text-center">
+                                <i className="fas fa-list-check text-gray-300 text-4xl mb-4"></i>
+                                <p className="text-gray-500">No bonuses being tracked</p>
+                                <button 
+                                    onClick={() => setCurrentPage('bonuses')}
+                                    className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                                >
+                                    Browse Available Bonuses
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {playerBonuses.map(bonus => (
+                                    <div key={bonus.id} className="bg-white rounded-lg shadow p-6">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <h3 className="text-lg font-medium text-gray-900">{bonus.bank}</h3>
+                                                <p className="text-gray-600">{bonus.title}</p>
+                                                <p className="text-2xl font-bold text-green-600">${bonus.amount}</p>
+                                            </div>
+                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                                bonus.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                                bonus.status === 'active' ? 'bg-blue-100 text-blue-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                            }`}>
+                                                {bonus.status}
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                            <div>
+                                                <span className="text-gray-500">Min Deposit:</span>
+                                                <p className="font-medium">${bonus.minDeposit.toLocaleString()}</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-500">Direct Deposit:</span>
+                                                <p className="font-medium">${bonus.directDeposit}/month</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-500">Holding Period:</span>
+                                                <p className="font-medium">{bonus.holdingPeriod} days</p>
+                                            </div>
+                                            <div>
+                                                <span className="text-gray-500">Date Started:</span>
+                                                <p className="font-medium">{bonus.dateStarted ? new Date(bonus.dateStarted).toLocaleDateString() : 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-4 flex space-x-2">
+                                            <button 
+                                                onClick={() => {
+                                                    setTrackedBonuses(prev => ({
+                                                        ...prev,
+                                                        [activePlayer]: prev[activePlayer].map(b => 
+                                                            b.id === bonus.id ? { ...b, status: 'completed' } : b
+                                                        )
+                                                    }));
+                                                }}
+                                                className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700"
+                                            >
+                                                Mark Complete
+                                            </button>
+                                            <button 
+                                                onClick={() => {
+                                                    setTrackedBonuses(prev => ({
+                                                        ...prev,
+                                                        [activePlayer]: prev[activePlayer].filter(b => b.id !== bonus.id)
+                                                    }));
+                                                }}
+                                                className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const Comparison = () => {
+                const player1Bonuses = trackedBonuses['Player 1'];
+                const player2Bonuses = trackedBonuses['Player 2'];
+                
+                const getStats = (bonuses) => ({
+                    total: bonuses.reduce((sum, b) => sum + b.amount, 0),
+                    completed: bonuses.filter(b => b.status === 'completed').length,
+                    active: bonuses.filter(b => b.status === 'active').length
+                });
+                
+                const p1Stats = getStats(player1Bonuses);
+                const p2Stats = getStats(player2Bonuses);
+                
+                return (
+                    <div>
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900">Player Comparison</h2>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="bg-white rounded-lg shadow p-6">
+                                <h3 className="text-lg font-medium text-blue-600 mb-4">Player 1</h3>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <span>Total Earnings:</span>
+                                        <span className="font-bold text-green-600">${p1Stats.total}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Completed Bonuses:</span>
+                                        <span className="font-bold">{p1Stats.completed}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Active Bonuses:</span>
+                                        <span className="font-bold">{p1Stats.active}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white rounded-lg shadow p-6">
+                                <h3 className="text-lg font-medium text-purple-600 mb-4">Player 2</h3>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <span>Total Earnings:</span>
+                                        <span className="font-bold text-green-600">${p2Stats.total}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Completed Bonuses:</span>
+                                        <span className="font-bold">{p2Stats.completed}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Active Bonuses:</span>
+                                        <span className="font-bold">{p2Stats.active}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-8 bg-white rounded-lg shadow p-6">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Combined Household Total</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-green-600">${p1Stats.total + p2Stats.total}</p>
+                                    <p className="text-sm text-gray-500">Total Earned</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-blue-600">{p1Stats.completed + p2Stats.completed}</p>
+                                    <p className="text-sm text-gray-500">Completed Bonuses</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-purple-600">{p1Stats.active + p2Stats.active}</p>
+                                    <p className="text-sm text-gray-500">Active Bonuses</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderPage = () => {
+                switch(currentPage) {
+                    case 'bonuses': return <BonusCatalog />;
+                    case 'tracking': return <Tracking />;
+                    case 'comparison': return <Comparison />;
+                    default: return <Dashboard />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <header className="bg-white shadow-sm border-b">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16">
+                                <div className="flex items-center space-x-8">
+                                    <h1 className="text-xl font-bold text-gray-900">🏦 Bank Bonus Tracker</h1>
+                                    <Navigation />
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <span className="text-sm text-gray-600">Active Player:</span>
+                                    <select 
+                                        value={activePlayer}
+                                        onChange={(e) => setActivePlayer(e.target.value)}
+                                        className="border rounded px-3 py-1 bg-white"
+                                    >
+                                        <option>Player 1</option>
+                                        <option>Player 2</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    
+                    <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {renderPage()}
+                    </main>
+                    
+                    <footer className="bg-white border-t mt-12">
+                        <div className="max-w-7xl mx-auto py-4 px-4 text-center text-sm text-gray-500">
+                            © 2025 Bank Bonus Tracker. All rights reserved.
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+        
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
